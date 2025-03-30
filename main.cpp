@@ -4,7 +4,6 @@
 #include "globals.h"
 #include "graphics.h"
 #include "handle_input.h"
-#include "transitions.h"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(tileSize * mapWidth, tileSize * mapHeight), "2D");
@@ -30,7 +29,6 @@ int main() {
         }
 
         handlePlayerInput(map, player, moveCooldown, moveDelay, tileSize);
-        tryMapTransition(player);
 
         drawGame(window, map, player, tileSize);
         window.display();
