@@ -2,14 +2,15 @@
 #include "globals.h"
 #include "utils.h"
 
+#include <iostream>
+
 void handlePlayerInput(std::vector<std::vector<int>>& map,
                        sf::RectangleShape& player,
                        sf::Clock& moveCooldown,
                        float moveDelay,
                        int tileSize)
 {
-    if (moveCooldown.getElapsedTime().asSeconds() >= moveDelay &&
-        currentState == Playing)
+    if (currentState == Playing && moveCooldown.getElapsedTime().asSeconds() >= moveDelay)
     {
         sf::Vector2i direction(0, 0);
 
@@ -20,53 +21,61 @@ void handlePlayerInput(std::vector<std::vector<int>>& map,
 
         if (direction != sf::Vector2i(0, 0)) {
             sf::Vector2i newPos = playerTile + direction;
-
-            // Переход между картами
             bool transitioned = false;
 
+            // Обработка вертикального выхода за пределы
             if (newPos.y < 0) {
                 auto it = mapLinks.find({currentMap, Up});
                 if (it != mapLinks.end()) {
                     currentMap = it->second;
                     map = loadMapFromFile(currentMap);
-                    newPos.y = map.size() - 1;
+                    newPos.y = static_cast<int>(map.size()) - 1;
                     transitioned = true;
+                } else {
+                    // Нет перехода – отменяем вертикальное смещение
+                    newPos.y = playerTile.y;
                 }
-            } else if (newPos.y >= map.size()) {
+            } else if (newPos.y >= static_cast<int>(map.size())) {
                 auto it = mapLinks.find({currentMap, Down});
                 if (it != mapLinks.end()) {
                     currentMap = it->second;
                     map = loadMapFromFile(currentMap);
                     newPos.y = 0;
                     transitioned = true;
+                } else {
+                    newPos.y = playerTile.y;
                 }
-            } else if (newPos.x < 0) {
+            }
+
+            // Обработка горизонтального выхода за пределы
+            if (newPos.x < 0) {
                 auto it = mapLinks.find({currentMap, Left});
                 if (it != mapLinks.end()) {
                     currentMap = it->second;
                     map = loadMapFromFile(currentMap);
-                    newPos.x = map[0].size() - 1;
+                    newPos.x = static_cast<int>(map[0].size()) - 1;
                     transitioned = true;
+                } else {
+                    newPos.x = playerTile.x;
                 }
-            } else if (newPos.x >= map[0].size()) {
+            } else if (newPos.x >= static_cast<int>(map[0].size())) {
                 auto it = mapLinks.find({currentMap, Right});
                 if (it != mapLinks.end()) {
                     currentMap = it->second;
                     map = loadMapFromFile(currentMap);
                     newPos.x = 0;
                     transitioned = true;
+                } else {
+                    newPos.x = playerTile.x;
                 }
             }
 
-            // После загрузки карты, проверим коллизию
-            if (map[newPos.y][newPos.x] == 0) {
+            if (transitioned || map[newPos.y][newPos.x] == 0) {
                 playerTile = newPos;
                 player.setPosition(playerTile.x * tileSize, playerTile.y * tileSize);
                 moveCooldown.restart();
-            } else if (transitioned) {
-                // если карта сменилась, но ячейка занята — отменим переход
-                playerTile = playerTile; // останемся на месте
             }
         }
     }
 }
+
