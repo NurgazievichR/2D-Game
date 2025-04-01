@@ -4,8 +4,13 @@
 #include "globals.h"
 #include "graphics.h"
 #include "handle_input.h"
+#include "loading.h"
+
 
 int main() {
+
+    loadBlockRegistry();
+
     sf::RenderWindow window(sf::VideoMode(tileSize * mapWidth, tileSize * mapHeight), "2D");
     window.setFramerateLimit(60);
 
@@ -34,5 +39,6 @@ int main() {
         window.display();
     }
 
+    unloadBlockRegistry();
     return 0;
 }
